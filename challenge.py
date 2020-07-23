@@ -12,7 +12,7 @@ import contextlib
 
 # Data Sources
 try:
-    file_dir = "C:/BootCampLargeFiles/"
+    file_dir = "C:\GitAustin\Movies-ETL\Data"
     with open(f'{file_dir}/wikipedia.movies.json', mode='r') as file:
         wiki_movies_raw = json.load(file)
     kaggle_metadata = pd.read_csv(f'{file_dir}movies_metadata.csv')
@@ -131,7 +131,7 @@ def truncate_db(engine):
 
 
 # Challenge Function
-def MovieEFT (wiki_movies_raw, kaggle_metadata, ratings):
+def MovieETL (wiki_movies_raw, kaggle_metadata, ratings):
     #Clean Wiki Data
     try:
         wiki_movies = [movie for movie in wiki_movies_raw
@@ -281,6 +281,10 @@ def MovieEFT (wiki_movies_raw, kaggle_metadata, ratings):
             print(f'Done. {time.time() - start_time} total seconds elapsed')
     except:
         print("There was an error loading the data in PostresSQL")
+    print("The ETL is complete")
+
+
 
 # Use Function to perform EFT
-MovieEFT(wiki_movies_raw, kaggle_metadata, ratings)
+MovieETL(wiki_movies_raw, kaggle_metadata, ratings)
+
