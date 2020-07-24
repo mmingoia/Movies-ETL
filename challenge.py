@@ -11,6 +11,7 @@ import time
 import contextlib
 import os
 
+
 # Functions Used Inside challenge Function
 
 # Used to clean wikipedia data
@@ -122,17 +123,8 @@ def truncate_db(engine):
 
 
 # Challenge Function
-def MovieETL (wikiData, kaggleData, ratingsData):
-    
-    #Load data from Sources
-    try:
-        with open(wikiData, mode='r') as file:
-            wiki_movies_raw = json.load(file)
-            kaggle_metadata = pd.read_csv(kaggleData)
-            ratings = pd.read_csv(ratingsData)
-    except:
-        print("There is an error loading the data")
-    
+def MovieETL (wiki_movies_raw, kaggle_metadata, ratings):
+  
     #Clean Wiki Data
     try:
         wiki_movies = [movie for movie in wiki_movies_raw
@@ -262,34 +254,46 @@ def MovieETL (wikiData, kaggleData, ratingsData):
     except:
         print("There was an error merging ratings data")
     
-    # Load Data into Database
+    #Load Data into Database
     try:
         db_string = f"postgres://postgres:{db_password}@127.0.0.1:5432/movie_data"
         engine = create_engine(db_string)
-
         truncate_db(engine)
         movies_df.to_sql(name='movies', con=engine, if_exists='append')
-
         rows_imported = 0
         # get the start_time from time.time()
         start_time = time.time()
-        for data in pd.read_csv(f'{file_dir}ratings.csv', chunksize=1000000):
+        for data in pd.read_csv(RatingsData, chunksize=100000):
             print(f'importing rows {rows_imported} to {rows_imported + len(data)}...', end='')
             data.to_sql(name='ratings', con=engine, if_exists='append')
             rows_imported += len(data)
-
-            # add elapsed time to final print out
+        # add elapsed time to final print out
             print(f'Done. {time.time() - start_time} total seconds elapsed')
+        print("The ETL is complete")
     except:
         print("There was an error loading the data in PostresSQL")
-    print("The ETL is complete")
+
+# Data Directory
+
+WikiData = os.path.join('Data','wikipedia.movies.json')
+KaggleData = os.path.join('Data','movies_metadata.csv')
+RatingsData = os.path.join('Data','ratings.csv')
+
+# Load Data Sources
+
+try:
+    with open(WikiData, mode='r') as file:
+        wiki_movies_raw = json.load(file)
+    kaggle_metadata = pd.read_csv(KaggleData)
+    ratings = pd.read_csv(RatingsData)
+except:
+    print("There is an error loading the data")
 
 
-# Data Sources
-wikiData = os.path.join('Data','wikipedia.movies.json')
-kaggleData = os.path.join('Data','movies_metadata.csv')
-ratingsData = os.path.join('Data','ratings.csv')
+#%%
 
-# Use Function to perform EFT
-MovieETL(wikiData, kaggleData, ratingsData)
+# Use Function to perform EFT on data sources
+MovieETL(wiki_movies_raw, kaggle_metadata, ratings)
 
+
+# %%
