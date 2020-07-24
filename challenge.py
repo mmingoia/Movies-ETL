@@ -289,9 +289,6 @@ try:
 except:
     print("There is an error loading the data")
 
-
-#%%
-
 # Use Function to perform EFT on data sources
 MovieETL(wiki_movies_raw, kaggle_metadata, ratings)
 
