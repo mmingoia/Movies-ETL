@@ -9,16 +9,7 @@ from sqlalchemy import MetaData
 from config import db_password
 import time
 import contextlib
-
-# Data Sources
-try:
-    file_dir = "C:\GitAustin\Movies-ETL\Data"
-    with open(f'{file_dir}/wikipedia.movies.json', mode='r') as file:
-        wiki_movies_raw = json.load(file)
-    kaggle_metadata = pd.read_csv(f'{file_dir}movies_metadata.csv')
-    ratings = pd.read_csv(f'{file_dir}ratings.csv')
-except:
-    print("The input files are not located in the correct directory, update the file_dir in the script")
+import os
 
 # Functions Used Inside challenge Function
 
@@ -131,7 +122,17 @@ def truncate_db(engine):
 
 
 # Challenge Function
-def MovieETL (wiki_movies_raw, kaggle_metadata, ratings):
+def MovieETL (wikiData, kaggleData, ratingsData):
+    
+    #Load data from Sources
+    try:
+        with open(wikiData, mode='r') as file:
+            wiki_movies_raw = json.load(file)
+            kaggle_metadata = pd.read_csv(kaggleData)
+            ratings = pd.read_csv(ratingsData)
+    except:
+        print("There is an error loading the data")
+    
     #Clean Wiki Data
     try:
         wiki_movies = [movie for movie in wiki_movies_raw
@@ -284,7 +285,11 @@ def MovieETL (wiki_movies_raw, kaggle_metadata, ratings):
     print("The ETL is complete")
 
 
+# Data Sources
+wikiData = os.path.join('Data','wikipedia.movies.json')
+kaggleData = os.path.join('Data','movies_metadata.csv')
+ratingsData = os.path.join('Data','ratings.csv')
 
 # Use Function to perform EFT
-MovieETL(wiki_movies_raw, kaggle_metadata, ratings)
+MovieETL(wikiData, kaggleData, ratingsData)
 
